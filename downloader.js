@@ -2,18 +2,18 @@ const https = require('https');
 const http = require('http');
 
 /**
- * Download video atau audio dari TikTok menggunakan API publik
- * @param {string} url - URL TikTok
- * @param {string} type - 'video' atau 'audio'
- * @returns {Promise<object>} - Hasil download
+ * 
+ * @param {string} url 
+ * @param {string} type 
+ * @returns {Promise<object>} 
  */
 async function downloadTikTok(url, type = 'video') {
   try {
-    // Resolve URL pendek (vm.tiktok.com, vt.tiktok.com)
+    
     const resolvedUrl = await resolveRedirect(url);
     console.log(`[Downloader] URL: ${resolvedUrl}, Type: ${type}`);
 
-    // Ambil data dari API tikwm.com (API publik, gratis)
+    
     const apiData = await fetchTikTokAPI(resolvedUrl);
 
     if (!apiData || apiData.code !== 0) {
@@ -29,7 +29,7 @@ async function downloadTikTok(url, type = 'video') {
     let filename;
 
     if (type === 'audio') {
-      // Unduh audio/musik
+    
       downloadUrl = videoData.music_info?.play || videoData.music?.play;
       if (!downloadUrl) {
         return { success: false, error: 'Audio tidak tersedia untuk video ini.' };
@@ -37,7 +37,7 @@ async function downloadTikTok(url, type = 'video') {
       const musicTitle = videoData.music_info?.title || videoData.music?.title || 'audio';
       filename = sanitizeFilename(`${author}_${musicTitle}.mp3`);
     } else {
-      // Unduh video tanpa watermark
+    
       downloadUrl = videoData.play || videoData.wmplay;
       if (!downloadUrl) {
         return { success: false, error: 'URL video tidak ditemukan.' };
@@ -45,7 +45,7 @@ async function downloadTikTok(url, type = 'video') {
       filename = sanitizeFilename(`${author}_tiktok_${Date.now()}.mp4`);
     }
 
-    // Download file sebagai buffer
+    
     console.log(`[Downloader] Mengunduh dari: ${downloadUrl}`);
     const { buffer, size } = await downloadBuffer(downloadUrl);
 
@@ -66,9 +66,6 @@ async function downloadTikTok(url, type = 'video') {
   }
 }
 
-/**
- * Ambil data TikTok dari tikwm.com API
- */
 async function fetchTikTokAPI(url) {
   return new Promise((resolve, reject) => {
     const encodedUrl = encodeURIComponent(url);
@@ -93,9 +90,6 @@ async function fetchTikTokAPI(url) {
   });
 }
 
-/**
- * Resolve URL redirect (vm.tiktok.com -> www.tiktok.com)
- */
 async function resolveRedirect(url, maxRedirects = 5) {
   return new Promise((resolve, reject) => {
     if (maxRedirects === 0) return resolve(url);
@@ -112,14 +106,11 @@ async function resolveRedirect(url, maxRedirects = 5) {
       } else {
         resolve(url);
       }
-      res.destroy(); // Tutup koneksi
-    }).on('error', () => resolve(url)); // Jika error, kembalikan URL asli
+      res.destroy(); 
+    }).on('error', () => resolve(url)); 
   });
 }
 
-/**
- * Download URL sebagai Buffer
- */
 async function downloadBuffer(url, maxRedirects = 5) {
   return new Promise((resolve, reject) => {
     if (maxRedirects === 0) return reject(new Error('Terlalu banyak redirect'));
@@ -153,9 +144,6 @@ async function downloadBuffer(url, maxRedirects = 5) {
   });
 }
 
-/**
- * Format bytes menjadi string yang mudah dibaca
- */
 function formatBytes(bytes) {
   if (bytes === 0) return '0 B';
   const k = 1024;
@@ -164,14 +152,11 @@ function formatBytes(bytes) {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
 }
 
-/**
- * Bersihkan nama file dari karakter tidak valid
- */
 function sanitizeFilename(name) {
   return name
     .replace(/[<>:"/\\|?*]/g, '')
     .replace(/\s+/g, '_')
-    .slice(0, 100); // Batasi panjang nama file
+    .slice(0, 100); 
 }
 
 module.exports = { downloadTikTok, formatBytes };
